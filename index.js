@@ -37,21 +37,24 @@ const sharedKey = createSharedKey(ENCRYPTION_PRIVATE_KEY, ONDC_PUBLIC_KEY);
 
 // Route for handling subscription requests
 app.post('/on_subscribe', async (req, res) => {
-    try {
-        const { challenge } = req.body;
-        console.log('Received challenge:', challenge);
-        
-        const answer = decryptAES256ECB(sharedKey, challenge);
-        console.log('Decrypted answer:', answer);
-        
-        res.status(200).json({ answer });
-    } catch (error) {
-        console.error('Subscription error:', error);
-        res.status(500).json({ 
-            error: 'Failed to process subscription',
-            details: error.message 
-        });
-    }
+  try {
+      const { challenge } = req.body;
+      console.log('Received challenge:', challenge);
+      
+      // Log the shared key details (length only, not the actual key)
+      console.log('Shared key length:', sharedKey.length);
+      
+      const answer = decryptAES256ECB(sharedKey, challenge);
+      console.log('Decrypted answer:', answer);
+      
+      res.status(200).json({ answer });
+  } catch (error) {
+      console.error('Subscription error:', error);
+      res.status(500).json({ 
+          error: 'Failed to process subscription',
+          details: error.message 
+      });
+  }
 });
 
 // Route for serving verification file

@@ -1,84 +1,68 @@
-// crypto-utils.js
 const crypto = require('crypto');
 const _sodium = require('libsodium-wrappers');
 
-/**
- * Derives an AES key from the shared secret
- * @param {Buffer} sharedKey - The shared secret key
- * @returns {Buffer} - 32-byte key suitable for AES-256
- */
-function deriveAESKey(sharedKey) {
-    return crypto.createHash('sha256').update(sharedKey).digest();
-}
-
-/**
- * Creates a shared key from private and public keys
- * @param {string} privateKeyB64 - Base64 encoded private key
- * @param {string} publicKeyB64 - Base64 encoded public key
- * @returns {Buffer} - Derived AES key
- */
 function createSharedKey(privateKeyB64, publicKeyB64) {
     try {
-        // Create private key object
+        // Convert base64 keys to DER format
         const privateKey = crypto.createPrivateKey({
             key: Buffer.from(privateKeyB64, 'base64'),
             format: 'der',
             type: 'pkcs8'
         });
 
-        // Create public key object
         const publicKey = crypto.createPublicKey({
             key: Buffer.from(publicKeyB64, 'base64'),
             format: 'der',
             type: 'spki'
         });
 
-        // Generate shared secret
+        // Compute the shared secret
         const sharedSecret = crypto.diffieHellman({
             privateKey: privateKey,
             publicKey: publicKey
         });
 
-        // Derive AES key from shared secret
-        return deriveAESKey(sharedSecret);
+        // Use only first 32 bytes for AES-256
+        return sharedSecret.slice(0, 32);
     } catch (error) {
-        console.error('Error creating shared key:', error);
-        throw new Error(`Failed to create shared key: ${error.message}`);
+        console.error('Shared key creation error:', error);
+        throw error;
     }
 }
 
-/**
- * Decrypts data using AES-256-ECB
- * @param {Buffer} key - 32-byte AES key
- * @param {string} encryptedB64 - Base64 encoded encrypted data
- * @returns {string} - Decrypted string
- */
 function decryptAES256ECB(key, encryptedB64) {
     try {
         // Convert base64 to buffer
         const encrypted = Buffer.from(encryptedB64, 'base64');
         
-        // Create decipher (ECB mode doesn't use IV)
+        // Log key and encrypted data for debugging
+        console.log('Key length:', key.length);
+        console.log('Encrypted data length:', encrypted.length);
+        
+        // Create decipher with null IV (ECB mode)
         const decipher = crypto.createDecipheriv('aes-256-ecb', key, null);
-        decipher.setAutoPadding(true);
+        
+        // Disable auto padding
+        decipher.setAutoPadding(false);
         
         // Decrypt
         let decrypted = decipher.update(encrypted);
         decrypted = Buffer.concat([decrypted, decipher.final()]);
         
-        return decrypted.toString('utf8');
+        // Remove PKCS7 padding manually
+        const padLength = decrypted[decrypted.length - 1];
+        const unpadded = decrypted.slice(0, decrypted.length - padLength);
+        
+        return unpadded.toString('utf8');
     } catch (error) {
-        console.error('Decryption error:', error);
-        throw new Error(`Decryption failed: ${error.message}`);
+        console.error('Decryption error details:', {
+            keyLength: key ? key.length : 'no key',
+            encryptedLength: encryptedB64 ? Buffer.from(encryptedB64, 'base64').length : 'no data'
+        });
+        throw error;
     }
 }
 
-/**
- * Signs a message using Ed25519
- * @param {string} signingString - String to sign
- * @param {string} privateKeyB64 - Base64 encoded private key
- * @returns {Promise<string>} - Base64 encoded signature
- */
 async function signMessage(signingString, privateKeyB64) {
     await _sodium.ready;
     const sodium = _sodium;
@@ -92,7 +76,7 @@ async function signMessage(signingString, privateKeyB64) {
         return sodium.to_base64(signedMessage, sodium.base64_variants.ORIGINAL);
     } catch (error) {
         console.error('Signing error:', error);
-        throw new Error(`Signing failed: ${error.message}`);
+        throw error;
     }
 }
 
