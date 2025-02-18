@@ -9,10 +9,10 @@ require("dotenv").config()
 const {subscribe} = require("./controller/controllers")
 
 const port = process.env.PORT; // Port on which the server will listen
-const ENCRYPTION_PRIVATE_KEY = process.env.Encryption_Privatekey;
+const ENCRYPTION_PRIVATE_KEY = "MC4CAQAwBQYDK2VuBCIEIGjFVUt48vlWpiNYkuxoD6Jx5Eo83ewPrt6RmzaDYJJB";
 const ONDC_PUBLIC_KEY = "MCowBQYDK2VuAyEAa9Wbpvd9SsrpOZFcynyt/TO3x0Yrqyys4NUGIvyxX2Q="
-const REQUEST_ID = process.env.Request_id;
-const SIGNING_PRIVATE_KEY = process.env.Signing_private_key;
+const REQUEST_ID = "sedctfvbhwxdfcvg41fh2a";
+const SIGNING_PRIVATE_KEY = 'F53zG3C1NJWuQVFLOS8AOYfM1dJK6DjdF2SU7YrH1ksZCRiwnZc9cF1ka7isBtCRZoeVNzNCWPKNeinFoMiQhg==';
 
 
 
