@@ -6,10 +6,10 @@ const { createSharedKey, decryptAES256ECB, signMessage } = require('./utils/cryp
 
 // Configuration constants
 const port = process.env.PORT || 3000;
-const ENCRYPTION_PRIVATE_KEY = "MC4CAQAwBQYDK2VuBCIEIGjFVUt48vlWpiNYkuxoD6Jx5Eo83ewPrt6RmzaDYJJB";
+const ENCRYPTION_PRIVATE_KEY = "MC4CAQAwBQYDK2VuBCIEINBVq/yQLb0gzHDqQEsyKyq8IqEFcCet1FrNmVqEFaxO";
 const ONDC_PUBLIC_KEY = "MCowBQYDK2VuAyEAa9Wbpvd9SsrpOZFcynyt/TO3x0Yrqyys4NUGIvyxX2Q=";
-const REQUEST_ID = "sedctfvbhwxdfcvg41fh2a";
-const SIGNING_PRIVATE_KEY = 'F53zG3C1NJWuQVFLOS8AOYfM1dJK6DjdF2SU7YrH1ksZCRiwnZc9cF1ka7isBtCRZoeVNzNCWPKNeinFoMiQhg==';
+const REQUEST_ID = "sedctfvbdvxdfcvg41fh2a";
+const SIGNING_PRIVATE_KEY = '85x/NZeo6H6asmvk0dtWb32ccZBOWgdUujTGpnbZiVacJQ0/RpW1+t0199e2wL9uHDT9fqggWrPFvnzHgFagfQ==';
 
 // HTML template for site verification
 const htmlFile = `
