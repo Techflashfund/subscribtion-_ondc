@@ -10,7 +10,7 @@ const {subscribe} = require("./controller/controllers")
 
 const port = process.env.PORT; // Port on which the server will listen
 const ENCRYPTION_PRIVATE_KEY = process.env.Encryption_Privatekey;
-const ONDC_PUBLIC_KEY = "MCowBQYDK2VuAyEAduMuZgmtpjdCuxv+Nc49K0cB6tL/Dj3HZetvVN7ZekM="
+const ONDC_PUBLIC_KEY = "MCowBQYDK2VuAyEAa9Wbpvd9SsrpOZFcynyt/TO3x0Yrqyys4NUGIvyxX2Q="
 const REQUEST_ID = process.env.Request_id;
 const SIGNING_PRIVATE_KEY = process.env.Signing_private_key;
 
