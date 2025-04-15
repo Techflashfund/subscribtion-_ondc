@@ -7,8 +7,8 @@ const { createSharedKey, decryptAES256ECB, signMessage } = require('./utils/cryp
 // Configuration constants
 const port = process.env.PORT || 3000;
 const ENCRYPTION_PRIVATE_KEY = "MC4CAQAwBQYDK2VuBCIEIOjAwoZaKur1wChytywaU2pxqJDk1n/10WSRBxPG9gpv";
-const ONDC_PUBLIC_KEY = "u3BsHHpjye2c8PFtzmAy4qlo/D/TkOoO0tClRjvJDDw=";
-const REQUEST_ID = "sedctfvbdvxddevg41fh2a";
+const ONDC_PUBLIC_KEY = "MCowBQYDK2VuAyEAEvKD3P7FzSm8LMkgLYg+BREVE+clR0cKPCRPRSn8hQc=";
+const REQUEST_ID = "sedctfvbdvxdfcvg41wg4a";
 const SIGNING_PRIVATE_KEY = 'qtR2e1uUKgzygiDcyrSJWyz4T0cDT5YG4LlorirCDRu7cGwcemPJ7Zzw8W3OYDLiqWj8P9OQ6g7S0KVGO8kMPA==';
 
 // HTML template for site verification
