@@ -66,6 +66,7 @@ class SearchController {
         }
 
         console.log('ONDC Response Received');
+        console.log('Request Body:', req.body);
         // await SchemaSendController.sendToAnalytics('on_search',req.body)
         const { context, message } = req.body;
         
