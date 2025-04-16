@@ -66,7 +66,7 @@ class SearchController {
         }
 
         console.log('ONDC Response Received');
-        await SchemaSendController.sendToAnalytics('on_search',req.body)
+        // await SchemaSendController.sendToAnalytics('on_search',req.body)
         const { context, message } = req.body;
         
         if (!context?.transaction_id || !message?.catalog?.providers?.[0]) {
@@ -164,9 +164,9 @@ class SearchController {
         );
 
         const selectPayload = await SelectPayloadHandler.createSelectonePayload(req.body, formresponse.submissionId);
-        await SchemaSendController.sendToAnalytics('select', selectPayload);
+        // await SchemaSendController.sendToAnalytics('select', selectPayload);
         const selectResponse = await SelectRequestHandler.selectRequest(selectPayload);
-        await SchemaSendController.sendToAnalytics('select_response', selectResponse);
+        // await SchemaSendController.sendToAnalytics('select_response', selectResponse);
         await SelectIds.create({
             transactionId: context.transaction_id,
             messageId: selectPayload.context.message_id,
@@ -192,7 +192,7 @@ class SearchController {
             }
         };
         
-        await SchemaSendController.sendToAnalytics('on_search_response', responsePayload);
+        // await SchemaSendController.sendToAnalytics('on_search_response', responsePayload);
         return res.status(200).json(responsePayload);
         
 
