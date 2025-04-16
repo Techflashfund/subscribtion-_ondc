@@ -4,7 +4,7 @@ const SchemaTemp = require('../models/log.mocel');
 class SchemaSendController {
     static async sendToAnalytics(type, reqBody) {
         try {
-            const API_URL = 'https://analytics-api-pre-prod.aws.ondc.org/v1/api/push-txn-logs';
+            const API_URL = 'https://analytics-api.aws.ondc.org/v1/api/push-txn-logs';
             const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwbC5wci5mbGFzaGZ1bmQuaW5AYnV5ZXIiLCJleHAiOjE4MjI5MDAwMDAsImZyZXNoIjpmYWxzZSwiaWF0IjoxNjU5MTUxOTU2LCJqdGkiOiJiYzI0NzFhMDE0MjM0MWM2OTMwZTM1YWI4NzVkNjg2YyIsIm5iZiI6MTY1OTE1MTk1NiwidHlwZSI6ImFjY2VzcyIsImVtYWlsIjoidGVjaEBvbmRjLm9yZyIsInB1cnBvc2UiOiJkYXRhc2hhcmluZyIsInBob25lX251bWJlciI6bnVsbCwicm9sZXMiOlsiYWRtaW5pc3RyYXRvciJdLCJmaXJzdF9uYW1lIjoibmV0d29yayIsImxhc3RfbmFtZSI6Im9ic2VydmFiaWxpdHkifQ.XQq1nbdqUGQVcV0c7FuqONocFJZN5NgzBBQzJEHo928';
 
             const payload = {

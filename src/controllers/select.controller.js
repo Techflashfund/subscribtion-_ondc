@@ -45,6 +45,7 @@ class SelectController {
 
   static async onSelect(req, res) {
     try {
+      console.log("Received select response:", req.body);
       await SchemaSendController.sendToAnalytics('on_select', req.body);
         const tempData = await TempData.create({
             transactionId: req.body.context?.transaction_id,
