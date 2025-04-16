@@ -24,11 +24,11 @@ class SearchController {
                 transactionId,
                 messageId
             });
-            await SchemaSendController.sendToAnalytics('search',requestBody)
+            // await SchemaSendController.sendToAnalytics('search',requestBody)
             
             
             const response = await searchRequest(requestBody)
-            await SchemaSendController.sendToAnalytics('search_response',response)
+            // await SchemaSendController.sendToAnalytics('search_response',response)
             
             await Transaction.create({
                 transactionId,

@@ -73,9 +73,9 @@ const SchemaSendController = require('../services/schemasend ');
               }
               
             const selectPayload=await  SelectPayloadHandler.createSelecttwoPayload(payload); 
-            await SchemaSendController.sendToAnalytics('select', selectPayload);
+            // await SchemaSendController.sendToAnalytics('select', selectPayload);
             const selectResponse=await selectRequest(selectPayload);
-            await SchemaSendController.sendToAnalytics('select_response', selectResponse);
+            // await SchemaSendController.sendToAnalytics('select_response', selectResponse);
             await SelectIds.create({
                 transactionId: payload.context.transaction_id,
                 messageId: selectPayload.context.message_id,
