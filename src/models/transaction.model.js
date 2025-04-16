@@ -31,6 +31,7 @@ const transactionSchema = new mongoose.Schema({
         ref: 'FormDetails'
     },
     requestBody: Object,
+    error: Object,
 
     ondcSearchResponses: [{
         response: Object,

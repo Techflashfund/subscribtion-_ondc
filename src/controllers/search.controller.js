@@ -14,10 +14,11 @@ const ProviderLoanRange = require('../models/minoffer.model');
 const SchemaSendController = require('../services/schemasend ');
 class SearchController {
     static async searchRequest(req, res) {
+        const { userId } = req.body;
+        const transactionId = uuidv4();
+        const messageId = uuidv4();
         try {
-            const { userId } = req.body;
-            const transactionId = uuidv4();
-            const messageId = uuidv4();
+           
             
             const requestBody = generateSearchRequestBody({
                 transactionId,
@@ -43,6 +44,14 @@ class SearchController {
             
             res.json(response);
         } catch (error) {
+            await Transaction.create({
+                transactionId,
+                messageId,
+                user: userId,
+                requestBody: req.body,
+                error: error
+                status: 'ERROR'
+            });
             console.error('Search request failed:', error);
             res.status(500).json({ error: error });
         }
