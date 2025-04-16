@@ -50,7 +50,7 @@ class SearchController {
                 user: userId,
                 requestBody: req.body,
                 error: error
-                status: 'ERROR'
+                
             });
             console.error('Search request failed:', error);
             res.status(500).json({ error: error });
