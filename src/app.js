@@ -31,6 +31,7 @@ const issuestatusRoutes = require('./routes/issuestatus.routes');
 const paymentupdateRoutes = require('./routes/paymenturl.routes');
 const dashboardroutes=require('./routes/dashboard.routes')
 const adminroutes=require('./routes/admin.routes')
+const refroutes=require('./routes/refferel.routes')
 
 const app = express();
 
@@ -59,6 +60,7 @@ app.use((req, res, next) => {
     next();
 });
 // Routes
+app.use('/api/ref',refroutes)
 app.use('/api/auth', authRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/on_search', searchRoutes);
