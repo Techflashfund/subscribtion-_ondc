@@ -11,6 +11,6 @@ const referralController = require('../controllers/referel.controller');
 router.get('/referrals/user/:email', referralController.getUserReferrals);
 
 // Admin route to get all referrals (protected)
-router.get('/referrals', authMiddleware, referralController.getAllReferrals);
+router.get('/referrals',  referralController.getAllReferrals);
 
 module.exports = router;
