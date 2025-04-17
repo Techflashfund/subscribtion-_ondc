@@ -6,7 +6,7 @@ const { sendOtpEmail } = require('../utils/email.utils');
 
 const signup = async (req, res) => {
     try {
-        const { email, phone, password } = req.body;
+        const { email, phone, password, referrer } = req.body;
         
         // Check if user exists
         const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
@@ -34,11 +34,27 @@ const signup = async (req, res) => {
 
         await user.save();
 
+        // If referrer is provided, store in ReferralUser collection
+        if (referrer) {
+            try {
+                const ReferralUser = require('../models/refferedusers.model'); // Import the model
+                
+                await ReferralUser.create({
+                    referrer: referrer,
+                    referred: email
+                });
+            } catch (referralError) {
+                // Log the error but don't fail the signup process
+                console.error('Error creating referral record:', referralError);
+            }
+        }
+
         // Send OTP email
         await sendOtpEmail(email, otp);
 
         res.status(201).json({ message: 'User created. Please verify your email.' });
     } catch (error) {
+        console.error('Signup error:', error);
         res.status(500).json({ message: 'Something went wrong' });
     }
 };
