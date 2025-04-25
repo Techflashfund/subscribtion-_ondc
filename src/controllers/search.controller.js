@@ -61,9 +61,9 @@ class SearchController {
     try {
         // Version check
         const version = req.body.context?.version;
-        if (version !== "2.0.1") {
-            return res.status(400).json({ success: false, error: "NACK" });
-        }
+        // if (version !== "2.0.1") {
+        //     return res.status(400).json({ success: false, error: "NACK" });
+        // }
 
         console.log('ONDC Response Received');
         console.log('Request Body:', req.body);
