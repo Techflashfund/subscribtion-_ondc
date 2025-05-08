@@ -171,7 +171,7 @@ class SearchController {
         await SelectIds.create({
             transactionId: context.transaction_id,
             messageId: selectPayload.context.message_id,
-            type: 'SELECT_2',
+            type: 'SELECT_1',
         });
         await SelectTwo.create({
                         transactionId: context.transaction_id,
