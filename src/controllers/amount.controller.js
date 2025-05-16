@@ -88,8 +88,14 @@ class AmountController {
       await SelectIds.create({
         transactionId: selectPayload.context.transaction_id,
         messageId: selectPayload.context.message_id,
-        type: "SELECT_3",
-      });
+        type: "PL_SELECT2",
+        status: 'no',
+        select: {
+            request: selectPayload,
+            response: selectResponse,
+            timestamp: new Date()
+        }
+    });
 
       await SelectThree.create({
         transactionId,

@@ -45,8 +45,7 @@ class SelectController {
 
   static async onSelect(req, res) {
     try {
-      console.log("Received select response:", req.body);
-      // await SchemaSendController.sendToAnalytics('on_select', req.body);
+      
         const tempData = await TempData.create({
             transactionId: req.body.context?.transaction_id,
             messageId: req.body.context?.message_id,
@@ -54,15 +53,11 @@ class SelectController {
             
         });
 
-        console.log('Temp data saved:', tempData._id);
-      const { context, message } = req.body;
+        
+      
       
 
-      if (!context?.transaction_id || !message) {
-        return res
-          .status(400)
-          .json({ error: "Invalid select response format" });
-      }
+      
       const payloadType =await getPayloadType(req.body);
        console.log('Payload Type:', payloadType);
        
@@ -86,7 +81,17 @@ class SelectController {
         case "KYC":
           result = await SelectHelper.handleOnselectKYC(req.body);
           break;
+        case "DOWN_PAYMENT_FORM":
+         result = await SelectHelper.handleOnselectDownPaymentForm(req.body);
+          break;
+        case "DOWN_PAYMENT_LINK":
+          result = await SelectHelper.handleOnselectDownPaymentLink(req.body);
+          break;
+          case "PF_SELECT2FINAL":
+            result = await SelectHelper.handleOnselectFinal(req.body);
+            break;  
 
+          
         default:
           throw new Error("Unknown payload type");
       }
@@ -101,7 +106,7 @@ class SelectController {
     };
 
       // Update Transaction
-      // await SchemaSendController.sendToAnalytics('on_select_response', responsePayload);
+      await SchemaSendController.sendToAnalytics('on_select_response', responsePayload);
       return res.status(200).json(responsePayload);
     } catch (error) {
       console.error("Select response processing failed:", error);

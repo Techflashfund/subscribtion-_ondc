@@ -24,6 +24,19 @@ class InitController {
         case "TypeThree":
           await InitHelper.handleTypeThree(req.body);
           break;
+          case "PF_INIT0":
+            await InitHelper.handlepfinit1(req.body);
+            break;  
+          case "PF_INIT1":  
+          await InitHelper.handlepfinit2(req.body);
+            break; 
+
+          case "PF_INIT2":
+            await InitHelper.handlepfinit3(req.body);
+            break;  
+
+
+          PF_SELECT2FINAL
         default:
           throw new Error("Unknown request type");
       }

@@ -7,6 +7,16 @@ const { selectRequest } = require("../services/select.services")
 const SelectIds = require('../models/selectids.model');
 const FormIds = require('../models/formids.model');
 const SchemaSendController = require('../services/schemasend ');
+const PFDownpaymentDetails = require('../models/pfdownpaymentdetails');
+const DownpaymentService=require('../services/pfselectformsurivies');
+const PFSelectPayloadHandler = require('../utils/PFSelectPayloadHandler');
+const SelectRequestHandler = require('../services/select.services');
+const PFDownpaymentLink = require('../models/pfdownpaymentlink');
+const PFInitHandler = require('../utils/pfinit');
+const InitService = require('../services/init.services');
+const InitMessageIds = require('../models/initmessage.model');
+const InitialPayload = require('../models/initialpayload');
+
  class Selecthepler{
     static   getPayloadType(payload){
  
@@ -45,6 +55,13 @@ const SchemaSendController = require('../services/schemasend ');
 
   static async handleOnselectInitialForm(payload){
 
+    await InitialPayload.create({
+        transactionId: payload.context.transaction_id,
+       
+        requestPayload: payload,
+        status: 'INITIATED'
+    });
+
     try {
         await Transaction.findOneAndUpdate(
             { transactionId: payload.context.transaction_id },
@@ -73,14 +90,19 @@ const SchemaSendController = require('../services/schemasend ');
               }
               
             const selectPayload=await  SelectPayloadHandler.createSelecttwoPayload(payload); 
-            // await SchemaSendController.sendToAnalytics('select', selectPayload);
+            await SchemaSendController.sendToAnalytics('select', selectPayload);
             const selectResponse=await selectRequest(selectPayload);
-            // await SchemaSendController.sendToAnalytics('select_response', selectResponse);
+            await SchemaSendController.sendToAnalytics('select_response', selectResponse);
             await SelectIds.create({
                 transactionId: payload.context.transaction_id,
                 messageId: selectPayload.context.message_id,
-                type: 'SELECT_2',
-                
+                type: 'PL_SELECT1',
+                status: 'no',
+                select: {
+                    request: selectPayload,
+                    response: selectResponse,
+                    timestamp: new Date()
+                }
             });
             console.log('SelectTwo response:', selectResponse);
             
@@ -249,9 +271,213 @@ static async handleOnselectKYC(payload) {
         return { success: false, error: "NACK" };
     }
 }
+static async handleOnselectDownPaymentForm(payload) {
+    try {
+        const formDetails = payload.message?.order?.items?.[0]?.xinput;
+        const item = payload.message?.order?.items?.[0];
+        const provider = payload.message?.order?.provider;
+        const quote = payload.message?.order?.quote;
+        const transaction = await Transaction.findOne({ 
+            transactionId: payload.context.transaction_id 
+        }).populate('user');
+
+        if (!transaction) {
+            throw new Error("Transaction not found");
+        }
+        if (!formDetails || !formDetails.form?.url || !formDetails.form?.id || !payload.message?.order?.provider?.id) {
+            return { success: false, error: "NACK" };
+        }
+
+        const infoTags = item?.tags?.find(tag => tag?.descriptor?.code === 'INFO')?.list || [];
+        const getTagValue = (tags, code) => {
+            try {
+                return tags.find(tag => tag?.descriptor?.code === code)?.value;
+            } catch (error) {
+                console.warn(`Unable to get tag value for code: ${code}`);
+                return null;
+            }
+        };
+
+        const downpaymentDetails = await PFDownpaymentDetails.create({
+            transactionId: payload.context.transaction_id,
+            providerId: provider.id,
+            itemId: item.id,
+            formDetails: {
+                id: formDetails.form.id,
+                url: formDetails.form.url,
+                mimeType: formDetails.form.mime_type,
+                resubmit: formDetails.form.resubmit,
+                multipleSubmissions: formDetails.form.multiple_submissions
+            },
+            loanInfo: {
+                price: item.price,
+                interestRate: getTagValue(infoTags, 'INTEREST_RATE'),
+                term: getTagValue(infoTags, 'TERM'),
+                interestRateType: getTagValue(infoTags, 'INTEREST_RATE_TYPE'),
+                minimumDownpayment: getTagValue(infoTags, 'MINIMUM_DOWNPAYMENT'),
+                fees: {
+                    application: getTagValue(infoTags, 'APPLICATION_FEE'),
+                    foreclosure: getTagValue(infoTags, 'FORECLOSURE_FEE'),
+                    interestRateConversion: getTagValue(infoTags, 'INTEREST_RATE_CONVERSION_CHARGE'),
+                    delayPenalty: getTagValue(infoTags, 'DELAY_PENALTY_FEE'),
+                    otherPenalty: getTagValue(infoTags, 'OTHER_PENALTY_FEE')
+                },
+                repayment: {
+                    frequency: getTagValue(infoTags, 'REPAYMENT_FREQUENCY'),
+                    installments: getTagValue(infoTags, 'NUMBER_OF_INSTALLMENTS'),
+                    amount: getTagValue(infoTags, 'INSTALLMENT_AMOUNT')
+                }
+            },
+            quote: quote,
+            status: 'INITIATED'
+        });
+        const downpaymenresponse=await DownpaymentService.submitDownpaymentForm(
+            transaction.user._id,
+            payload.context.transaction_id,
+            formDetails.form.url,
+            formDetails.form.id
+        );
+        console.log('downpayment response:',downpaymenresponse.submissionId);
+        const selectPayload = PFSelectPayloadHandler.createDownpaymentSelectPayload(
+            payload.context,
+            provider,
+            item,
+            downpaymenresponse.submissionId
+        );
+        const selectResponse = await SelectRequestHandler.selectRequest(selectPayload);
+        console.log('Select response:', selectResponse);
+        await FormIds.create({
+            transactionId: payload.context.transaction_id,
+            formId: formDetails.form.id,
+            type: 'DOWNPAYMENT',
+            status: 'no'
+        });
+        await SelectIds.create({
+            transactionId: payload.context.transaction_id,
+            messageId: selectPayload.context.message_id,
+            type: 'PF_SELECT1',
+            status: 'no',
+            select: {
+                request: selectPayload,
+                response: selectResponse,
+                timestamp: new Date()
+            }
+        });
+        await Transaction.findOneAndUpdate(
+            { transactionId: payload.context.transaction_id },
+            { status: 'DOWNPAYMENT_FORM_RECEIVED' }
+        );
+        return {
+            success: true,
+            data: {
+                context: payload.context,
+                message: { ack: { status: "ACK" } }
+            }
+        };
+
+    } catch (error) {
+        console.error('Handle onselect Down Payment Form failed:', error);
+        return { success: false, error: "NACK" };
+    }
 
 
 }
+static async handleOnselectDownPaymentLink(payload) {
+    try {
+        const formDetails = payload.message?.order?.items?.[0]?.xinput;
+        const item = payload.message?.order?.items?.[0];
+        const provider = payload.message?.order?.provider;
+        const quote = payload.message?.order?.quote;
+        const transaction = await Transaction.findOne({ 
+            transactionId: payload.context.transaction_id 
+        }).populate('user');
+
+        if (!transaction) {
+            throw new Error("Transaction not found");
+        }
+        if (!formDetails || !formDetails.form?.url || !formDetails.form?.id || !payload.message?.order?.provider?.id) {
+            return { success: false, error: "NACK" };
+        }
+ // Get downpayment submission ID from checklist
+ 
+ 
+
+ // Save downpayment link details
+ const downpaymentLink = await PFDownpaymentLink.create({
+     transactionId: payload.context.transaction_id,
+     providerId: provider.id,
+     itemId: item.id,
+     formDetails: {
+         id: formDetails.form.id,
+         url: formDetails.form.url,
+         mimeType: formDetails.form.mime_type,
+         resubmit: formDetails.form.resubmit,
+         multipleSubmissions: formDetails.form.multiple_submissions
+     },
+     
+     status: 'INITIATED'
+ });
+ await FormIds.create({
+    transactionId: payload.context.transaction_id,
+    formId: formDetails.form.id,
+    type: 'DOWNPAYMENT_KYC_LINK',
+    status: 'no'
+});
+await Transaction.findOneAndUpdate(
+    { transactionId: payload.context.transaction_id },
+    { status: 'DOWNPAYMENT_LINK_RECEIVED' }
+);
+console.log('Downpayment link saved:', downpaymentLink._id);
+            
+}catch (error) {
+    console.error('Handle onselect Down Payment Form failed:', error);
+    return { success: false, error: "NACK" };
+} 
+}
+
+static async handleOnselectFinal(payload){
+    try {
+        const formDetails = payload.message?.order?.items?.[0]?.xinput;
+        
+        if (!formDetails?.form_response?.status === "SUCCESS") {
+            return { success: false, error: "Invalid form response" };
+        }
+
+        // Create init payload
+        const initPayload = PFInitHandler.createInitPayload(payload);
+
+        // Send init request
+        const initResponse = await InitService.makeInitRequest(initPayload);
+        console.log('Init response:', initResponse);
+
+        await InitMessageIds.create({
+            transactionId: payload.context.transaction_id,
+            messageId: initPayload.context.message_id,
+            type: 'INIT0_PF',
+            status: 'no'
+        });
+
+        // Update transaction status
+        await Transaction.findOneAndUpdate(
+            { transactionId: payload.context.transaction_id },
+            { status: "INIT_INITIATED" }
+        );
+
+        return {
+            success: true,
+            data: {
+                context: payload.context,
+                message: { ack: { status: "ACK" } }
+            }
+        };
+
+    } catch (error) {
+        console.error('Handle onselect final failed:', error);
+        return { success: false, error: "NACK" };
+    }
+
+
+}}
 
 
 module.exports = Selecthepler;

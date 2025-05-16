@@ -5,11 +5,7 @@ const validateSearch = require('../middleware/validate.search');
 
 const router = express.Router();
 
-router.post('/one', 
-    authMiddleware,
-    validateSearch,
-    SearchController.searchRequest  
-);
+router.post('/one',SearchController.searchRequest);
 
 router.post('/', SearchController.onSearch);
 

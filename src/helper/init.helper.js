@@ -7,6 +7,13 @@ const Transaction = require("../models/transaction.model");
 const BankDetails = require("../models/bankdetails.model");
 const axios = require("axios");
 const SchemaSendController = require('../services/schemasend ');
+const PFMandateLinks = require('../models/pfmandatelinks');
+const FormIds = require('../models/formids.model');
+const PFEsignLinks = require('../models/pfesignlinks');
+const PFConfirmPayloadHandler = require('../utils/pfconfirms');
+const ConfirmService = require('../services/confirm.services');
+const PFInitFinal = require('../models/pfInitFinalSchema ');
+
 
 class InitHelper {
   static async handleTypeOne(payload) {
@@ -271,6 +278,170 @@ static async handleTypeThree(payload) {
       return { success: false, error: "NACK - Internal Server Error" };
   }
 }
+
+static async handlepfinit1(payload) {
+    console.log('Processing handlepfinit1...');
+    
+    const { context, message } = payload;
+    
+    // Validate required fields
+    const formUrl = message?.order?.items?.[0]?.xinput?.form?.url;
+    const formId = message?.order?.items?.[0]?.xinput?.form?.id;
+    const providerId = message?.order?.provider?.id;
+    
+    if (!formUrl || !formId || !providerId) {
+        return { success: false, error: "NACK - Missing required fields" };
+    }
+    
+    try {
+        // Update InitThree with loan agreement form details
+        await PFMandateLinks.create({
+            transactionId: context.transaction_id,
+            providerId: providerId,
+            formDetails: {
+                id: formUrl,
+                url: formId,
+                
+            },
+            status: 'INITIATED'
+        });
+
+        await FormIds.create({
+            transactionId: context.transaction_id,
+            formId,
+            type: 'PFMANDATE',
+            status: 'no'
+        });
+        // Update Transaction status
+        await Transaction.findOneAndUpdate(
+            { transactionId: context.transaction_id },
+            { status: "INITTHREE_COMPLETED" }
+        );
+    
+        return {
+            success: true,
+            data: {
+                context: payload.context,
+                message: { ack: { status: "ACK" } },
+                
+            }
+        };
+    
+    } catch (error) {
+        console.error('Error in handlepfinit1:', error);
+    
+        // Update status to FAILED in case of error
+        await InitThree.findOneAndUpdate(
+            {
+                transactionId: context.transaction_id,
+                providerId
+            },
+            {
+                $set: {
+                    status: "FAILED",
+                    responseTimestamp: new Date()
+                }
+            }
+        );
+    
+        return { success: false, error: "NACK - Internal Server Error" };
+    }
+}
+static async handlepfinit2(payload) {
+    console.log('Processing handlepfinit2...');
+    
+    const { context, message } = payload;
+    
+    // Validate required fields
+    const formUrl = message?.order?.items?.[0]?.xinput?.form?.url;
+    const formId = message?.order?.items?.[0]?.xinput?.form?.id;
+    const providerId = message?.order?.provider?.id;
+    
+    if (!formUrl || !formId || !providerId) {
+        return { success: false, error: "NACK - Missing required fields" };
+    }
+    
+    try {
+        // Create PFEsignLinks record
+        await PFEsignLinks.create({
+            transactionId: context.transaction_id,
+            providerId: providerId,
+            formDetails: {
+                id: formId,
+                url: formUrl,
+               
+            },
+            status: 'INITIATED'
+        });
+
+        // Create FormIds record
+        await FormIds.create({
+            transactionId: context.transaction_id,
+            formId: formId,
+            type: 'PFESIGN',
+            status: 'no'
+        });
+    
+        // Update Transaction status
+        await Transaction.findOneAndUpdate(
+            { transactionId: context.transaction_id },
+            { status: "ESIGN_FORM_RECEIVED" }
+        );
+    
+        return {
+            success: true,
+            data: {
+                context: payload.context,
+                message: { ack: { status: "ACK" } }
+            }
+        };
+    
+    } catch (error) {
+        console.error('Error in handlepfinit2:', error);
+    
+        return { success: false, error: "NACK - Internal Server Error" };
+    }}
+
+    static async handlepfinit3(payload) {
+        console.log('Processing handlepfinit3...');
+        
+        try {
+            const providerId = payload.message?.order?.provider?.id;
+        
+            // Save initial payload
+            const pfInitFinal = await PFInitFinal.create({
+                transactionId: payload.context.transaction_id,
+                providerId,
+                esignPayload: payload,
+                status: 'INITIATED'
+            });
+
+            // Create confirm payload
+            const confirmPayload = PFConfirmPayloadHandler.createConfirmPayload(payload);
+    
+            // Send confirm request
+            const confirmResponse = await ConfirmService.makeConfirmRequest(confirmPayload);
+            console.log('Confirm response:', confirmResponse);
+    
+            // Update transaction status
+            await Transaction.findOneAndUpdate(
+                { transactionId: payload.context.transaction_id },
+                { status: 'PF_CONFIRM_INITIATED' }
+            );
+    
+            return {
+                success: true,
+                data: {
+                    context: payload.context,
+                    message: { ack: { status: "ACK" } }
+                }
+            };
+    
+        } catch (error) {
+            console.error('Error in handlepfinit3:', error);
+            return { success: false, error: "NACK - Internal Server Error" };
+        }
+    }   
 
 }
 

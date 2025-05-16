@@ -20,6 +20,12 @@ const getInitPayloadType = async (payload) => {
                 return "TypeTwo";
             case 'INIT_3':
                 return "TypeThree";
+            case 'INIT0_PF':
+                return "PF_INIT0";    
+            case 'INIT1_PF':
+                    return "PF_INIT1";  
+            case 'INIT2_PF':
+                return "PF_INIT2";           
         }
     }
 

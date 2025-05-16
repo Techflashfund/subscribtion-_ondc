@@ -139,6 +139,7 @@ class FormSubmissionService {
                     console.log(`Appending ${key}:`, value);
                 }
             });
+console.log('field',fieldMapping);
 
             console.log('Form URL:', orgformUrl);
 

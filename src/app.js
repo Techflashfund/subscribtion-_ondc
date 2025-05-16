@@ -31,8 +31,12 @@ const issuestatusRoutes = require('./routes/issuestatus.routes');
 const paymentupdateRoutes = require('./routes/paymenturl.routes');
 const dashboardroutes=require('./routes/dashboard.routes')
 const adminroutes=require('./routes/admin.routes')
-const refroutes=require('./routes/refferel.routes')
-
+const merchantFormRoutes = require('./routes/merchantdata.routes');
+const customerRoutes = require('./routes/pfcustomer.routes');
+const pfOfferRoutes = require('./routes/pf.offerselect.routes');
+const onboardingRoutes = require('./routes/finvu.routes')
+const userRoutes = require('./routes/getuser.routes')
+const searchIdsRoutes = require('./routes/dasboardflow.routes');
 const app = express();
 
 // Middleware
@@ -60,7 +64,6 @@ app.use((req, res, next) => {
     next();
 });
 // Routes
-app.use('/api/ref',refroutes)
 app.use('/api/auth', authRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/on_search', searchRoutes);
@@ -92,8 +95,12 @@ app.use('/issues', issueRoutes);
 app.use('/on_issue', issueRoutes);
 app.use('/issue_status', issuestatusRoutes);
 app.use('/on_issue_status', issuestatusRoutes);
-
-
+app.use('/api/merchant', merchantFormRoutes);
+app.use('/api/customer', customerRoutes);
+app.use('/api/pfoffer', pfOfferRoutes);
+app.use('/onboarding', onboardingRoutes);
+app.use('/user', userRoutes);
+app.use('/records', searchIdsRoutes);
 
 // ...existing code...
 app.use('/admin',dashboardroutes)
@@ -115,7 +122,7 @@ console.log("Using MongoDB URI:", mongoURI);
 mongoose.connect(mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    useFindAndModify: false
+    
 })
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('MongoDB connection error:', err));
