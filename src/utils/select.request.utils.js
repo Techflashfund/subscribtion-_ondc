@@ -2,7 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const SelectIds = require('../models/selectids.model');
 class SelectPayloadHandler {
 
-static async createSelectonePayload(ondcResponse, formSubmissionId) {
+static async createSelectonePayload(context,message, formSubmissionId) {
     const existingSelect = await SelectIds.findOne({ 
             transactionId: context.transaction_id,
             type: 'PL_SELECT1'
@@ -10,7 +10,7 @@ static async createSelectonePayload(ondcResponse, formSubmissionId) {
         const messageId = existingSelect?.messageId || uuidv4();
     const selectPayload = {
         context: {
-            ...ondcResponse.context,
+            ...context,
             action: "select",
             message_id: uuidv4(),
             timestamp: new Date().toISOString()
@@ -18,14 +18,14 @@ static async createSelectonePayload(ondcResponse, formSubmissionId) {
         message: {
             order: {
                 provider: {
-                    id: ondcResponse.message.catalog.providers[0].id
+                    id: message.catalog.providers[0].id
                 },
                 items: [
                     {
-                        id: ondcResponse.message.catalog.providers[0].items[0].id,
+                        id: message.catalog.providers[0].items[0].id,
                         xinput: {
                             form: {
-                                id: ondcResponse.message.catalog.providers[0].items[0].xinput.form.id
+                                id: message.catalog.providers[0].items[0].xinput.form.id
                             },
                             form_response: {
                                 status: "SUCCESS",
