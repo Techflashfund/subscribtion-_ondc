@@ -83,10 +83,10 @@ async function handlePersonalLoanSearch(context, message) {
 
         // Handle select flow
         const selectPayload = await SelectPayloadHandler.createSelectonePayload(context,message, formresponse.submissionId);
-        await SchemaSendController.sendToAnalytics('select', selectPayload);
+        // await SchemaSendController.sendToAnalytics('select', selectPayload);
         
         const selectResponse = await SelectRequestHandler.selectRequest(selectPayload);
-        await SchemaSendController.sendToAnalytics('select_response', selectResponse);
+        // await SchemaSendController.sendToAnalytics('select_response', selectResponse);
         
         const existingSelect = await SelectIds.findOne({ 
     transactionId: context.transaction_id,
