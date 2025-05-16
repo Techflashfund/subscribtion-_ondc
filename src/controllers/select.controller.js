@@ -23,7 +23,7 @@ class SelectController {
         submissionId
       );
 
-      const selectResponse = await SelectRequestHandler.makeSelectRequest(
+      const selectResponse = await SelectRequestHandler.selectRequest(
         selectPayload
       );
 

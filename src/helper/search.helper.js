@@ -91,7 +91,7 @@ async function handlePersonalLoanSearch(context, message) {
         await SelectIds.create({
     transactionId: context.transaction_id,
     messageId: selectPayload.context.message_id,
-    type: 'PL_SELECT0',
+    type: 'PL_SELECT1',
     select: [{
         request: selectPayload,
         response: selectResponse,
