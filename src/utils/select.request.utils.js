@@ -12,7 +12,7 @@ static async createSelectonePayload(context,message, formSubmissionId) {
         context: {
             ...context,
             action: "select",
-            message_id: uuidv4(),
+            message_id: messageId,
             timestamp: new Date().toISOString()
         },
         message: {
