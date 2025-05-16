@@ -88,16 +88,41 @@ async function handlePersonalLoanSearch(context, message) {
         const selectResponse = await SelectRequestHandler.selectRequest(selectPayload);
         await SchemaSendController.sendToAnalytics('select_response', selectResponse);
         
-        await SelectIds.create({
+        const existingSelect = await SelectIds.findOne({ 
     transactionId: context.transaction_id,
     messageId: selectPayload.context.message_id,
-    type: 'PL_SELECT1',
-    select: [{
-        request: selectPayload,
-        response: selectResponse,
-        timestamp: new Date()
-    }]
+    type: 'PL_SELECT1'
 });
+if (existingSelect) {
+    // If exists, push to existing array
+    await SelectIds.findOneAndUpdate(
+        { 
+            transactionId: context.transaction_id,
+            messageId: selectPayload.context.message_id 
+        },
+        {
+            $push: {
+                select: {
+                    request: selectPayload,
+                    response: selectResponse,
+                    timestamp: new Date()
+                }
+            }
+        }
+    );
+} else {
+    // If doesn't exist, create new record
+    await SelectIds.create({
+        transactionId: context.transaction_id,
+        messageId: selectPayload.context.message_id,
+        type: 'PL_SELECT1',
+        select: [{
+            request: selectPayload,
+            response: selectResponse,
+            timestamp: new Date()
+        }]
+    });
+}
 
         await SelectTwo.create({
             transactionId: context.transaction_id,

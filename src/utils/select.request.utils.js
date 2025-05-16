@@ -1,7 +1,13 @@
 const { v4: uuidv4 } = require('uuid');
+const SelectIds = require('../models/selectids.model');
 class SelectPayloadHandler {
 
 static async createSelectonePayload(ondcResponse, formSubmissionId) {
+    const existingSelect = await SelectIds.findOne({ 
+            transactionId: context.transaction_id,
+            type: 'PL_SELECT1'
+        });
+        const messageId = existingSelect?.messageId || uuidv4();
     const selectPayload = {
         context: {
             ...ondcResponse.context,
