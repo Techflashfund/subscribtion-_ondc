@@ -89,10 +89,15 @@ async function handlePersonalLoanSearch(context, message) {
         await SchemaSendController.sendToAnalytics('select_response', selectResponse);
         
         await SelectIds.create({
-            transactionId: context.transaction_id,
-            messageId: selectPayload.context.message_id,
-            type: 'PL_SELECT0',
-        });
+    transactionId: context.transaction_id,
+    messageId: selectPayload.context.message_id,
+    type: 'PL_SELECT0',
+    select: [{
+        request: selectPayload,
+        response: selectResponse,
+        timestamp: new Date()
+    }]
+});
 
         await SelectTwo.create({
             transactionId: context.transaction_id,

@@ -19,7 +19,7 @@ const selectIdsSchema = new mongoose.Schema({
         enum: ['yes', 'no'],
         default: 'no'
     },
-    select: {
+    select:[{
         request: {
             type: Object,
             default: null
@@ -32,7 +32,7 @@ const selectIdsSchema = new mongoose.Schema({
             type: Date,
             default: Date.now
         }
-    },
+    }],
     onSelect: [{
         request: {
             type: Object,
