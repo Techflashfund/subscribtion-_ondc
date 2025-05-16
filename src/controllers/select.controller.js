@@ -106,7 +106,7 @@ class SelectController {
     };
 
       // Update Transaction
-      await SchemaSendController.sendToAnalytics('on_select_response', responsePayload);
+      // await SchemaSendController.sendToAnalytics('on_select_response', responsePayload);
       return res.status(200).json(responsePayload);
     } catch (error) {
       console.error("Select response processing failed:", error);
