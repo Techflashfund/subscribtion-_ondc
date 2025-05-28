@@ -37,6 +37,7 @@ const pfOfferRoutes = require('./routes/pf.offerselect.routes');
 const onboardingRoutes = require('./routes/finvu.routes')
 const userRoutes = require('./routes/getuser.routes')
 const searchIdsRoutes = require('./routes/dasboardflow.routes');
+const refrouter = require('./routes/refferel.routes');
 const app = express();
 
 // Middleware
@@ -101,6 +102,7 @@ app.use('/api/pfoffer', pfOfferRoutes);
 app.use('/onboarding', onboardingRoutes);
 app.use('/user', userRoutes);
 app.use('/records', searchIdsRoutes);
+app.use('/api/ref',refrouter)
 
 // ...existing code...
 app.use('/admin',dashboardroutes)
