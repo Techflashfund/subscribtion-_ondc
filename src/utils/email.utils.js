@@ -9,7 +9,7 @@ const sendOtpEmail = async (email, otp) => {
             from:  'no-reply@purchase-finance.flashfund.in', 
             to: email,
             subject: 'Email Verification OTP',
-            html: `<p>Your OTP for email verification Flashfund (pre-prod) is: <strong>${otp}</strong></p>`
+            html: `<p>Your OTP for email verification Flashfund (beta-prod) is: <strong>${otp}</strong></p>`
         });
         return true;
     } catch (error) {
