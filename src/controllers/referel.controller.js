@@ -106,10 +106,34 @@ const getAllReferrers = async (req, res) => {
         res.status(500).json({ message: 'Something went wrong' });
     }
 };
+const getAllReferrals = async (req, res) => {
+    try {
+        // Get all referrals with populated data
+        const referrals = await Referrals.find({})
+            .sort({ createdAt: -1 })
+            .select('referredBy userEmail createdAt');
+
+        res.json({
+            totalReferrals: referrals.length,
+            referrals: referrals.map(ref => ({
+                referredBy: ref.referredBy,
+                userEmail: ref.userEmail,
+                createdAt: ref.createdAt
+            }))
+        });
+    } catch (error) {
+        console.error('Get all referrals error:', error);
+        res.status(500).json({ message: 'Something went wrong' });
+    }
+};
+
+// Add to existing exports
+
 
 module.exports = {
   getUserReferrals,
   getAllReferrers,
   createReferral,
-  getReferrerUsers
+  getReferrerUsers,
+  getAllReferrals
 };
