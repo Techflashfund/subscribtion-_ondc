@@ -1,6 +1,8 @@
 const ReferralUser = require('../models/refferedusers.model');
 const Referrals = require('../models/refferels.model');
 const bcrypt = require('bcrypt');
+const { sendReferrerCredentials, sendAdminNotification } = require('../utils/email.utils');
+
 // Get all referrals made by a specific user (by email)
 const getUserReferrals = async (req, res) => {
   try {
@@ -72,6 +74,8 @@ const createReferral = async (req, res) => {
       referrer,
       password: hashedPassword
     });
+    await sendReferrerCredentials(referrer, password);
+await sendAdminNotification('info@flashfund.in', referrer);
 
     res.status(201).json({
       message: 'Referral user created successfully',
