@@ -50,7 +50,8 @@ app.use(cors({
         'http://localhost:3001',
         'https://personal-loan-571d4n33v-techflashfunds-projects.vercel.app',
         'https://personal-loan-ui.vercel.app',
-       'https://personal-loan-dashboard.vercel.app'
+       'https://personal-loan-dashboard.vercel.app',
+      'https://pl-pf-admin-dashboard.vercel.app'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
