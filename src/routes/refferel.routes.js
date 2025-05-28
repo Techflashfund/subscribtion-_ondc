@@ -13,6 +13,7 @@ router.post('/create', referralController.createReferral);
 router.get('/referrer/:email/users', referralController.getReferrerUsers)
 router.get('/referrers', referralController.getAllReferrers);
 router.get('/referrals', referralController.getAllReferrals);
+router.post('/login', referralController.loginReferrer);
 
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const ReferralUser = require('../models/refferedusers.model');
 const Referrals = require('../models/refferels.model');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const { sendReferrerCredentials, sendAdminNotification } = require('../utils/email.utils');
 
 // Get all referrals made by a specific user (by email)
@@ -90,6 +91,55 @@ await sendAdminNotification('info@flashfund.in', referrer);
     res.status(500).json({ message: 'Something went wrong' });
   }
 };
+const loginReferrer = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // Validate input
+        if (!email || !password) {
+            return res.status(400).json({
+                message: 'Email and password are required'
+            });
+        }
+
+        // Find referrer by email
+        const referrer = await ReferralUser.findOne({ referrer: email });
+        if (!referrer) {
+            return res.status(401).json({
+                message: 'Invalid credentials'
+            });
+        }
+
+        // Verify password
+        const isValidPassword = await bcrypt.compare(password, referrer.password);
+        if (!isValidPassword) {
+            return res.status(401).json({
+                message: 'Invalid credentials'
+            });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { id: referrer._id, email: referrer.referrer },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.json({
+            message: 'Login successful',
+            data: {
+                id: referrer._id,
+                email: referrer.referrer,
+                createdAt: referrer.createdAt,
+                token
+            }
+        });
+
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ message: 'Something went wrong' });
+    }
+};
 
 // Get all referrals in the system (admin function)
 const getAllReferrers = async (req, res) => {
@@ -139,5 +189,6 @@ module.exports = {
   getAllReferrers,
   createReferral,
   getReferrerUsers,
-  getAllReferrals
+  getAllReferrals,
+  loginReferrer
 };
