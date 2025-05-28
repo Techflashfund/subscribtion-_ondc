@@ -4,10 +4,11 @@ const referralUserSchema = new mongoose.Schema({
   referrer: {
     type: String,  // Store referrer's email
     required: true,
-    trim: true
+    trim: true,
+    unique: true
   },
-  referred: {
-    type: String,  // Store referred user's email
+  password: {
+    type: String,
     required: true,
     trim: true
   },
@@ -16,9 +17,6 @@ const referralUserSchema = new mongoose.Schema({
     default: Date.now
   }
 });
-
-// Create a compound index to ensure uniqueness of referrer-referred pairs
-referralUserSchema.index({ referrer: 1, referred: 1 }, { unique: true });
 
 const ReferralUser = mongoose.model('ReferralUser', referralUserSchema);
 

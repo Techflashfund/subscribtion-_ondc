@@ -36,12 +36,22 @@ const signup = async (req, res) => {
 
         // If referrer is provided, store in ReferralUser collection
         if (referrer) {
-            try {
+            
                 const ReferralUser = require('../models/refferedusers.model'); // Import the model
-                
-                await ReferralUser.create({
-                    referrer: referrer,
-                    referred: email
+                 const Referrals = require('../models/refferels.model');
+
+
+                 const whitelistedReferrer = await ReferralUser.findOne({ referrer: referrer });
+                if (!whitelistedReferrer) {
+                return res.status(400).json({ message: 'Invalid referrer code' });
+            }
+
+                 
+
+                try {
+                    await Referrals.create({
+                    referredBy: referrer,
+                    userEmail: email
                 });
             } catch (referralError) {
                 // Log the error but don't fail the signup process
