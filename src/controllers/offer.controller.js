@@ -1,4 +1,5 @@
 const SelectTwo = require('../models/selecttwo.model');
+const SelectIds = require('../models/selectids.model'); 
 const ProviderLoanRange = require('../models/minoffer.model');
 class OffersController {
     static async getOffers(req, res) {
@@ -11,12 +12,49 @@ class OffersController {
 
             const selectTwoRecords = await SelectTwo.find({ transactionId });
 
-            if (!selectTwoRecords.length) {
+             if (!selectTwoRecords.length) {
+                // Check SelectIds model if no records found in SelectTwo
+                const selectIdsRecords = await SelectIds.find({ 
+                    transactionId,
+                    status: 'no'
+                });
+
+                if (selectIdsRecords.length) {
+                    const onSelectRequests = selectIdsRecords.flatMap(record => 
+                        record.onSelect.map(select => select.request)
+                    ).filter(Boolean);
+
+                    return res.status(200).json({
+                        status: 'NO_OFFERS',
+                        message: 'No offers available at this time',
+                        onSelectRequests: onSelectRequests
+                    });
+                }
+
                 return res.status(404).json({ error: 'No offers found' });
             }
+
             const validRecords = selectTwoRecords.filter(record => record.onselectRequest);
 
             if (!validRecords.length) {
+                // Check SelectIds model if no valid records in SelectTwo
+                const selectIdsRecords = await SelectIds.find({ 
+                    transactionId,
+                    status: 'no'
+                });
+
+                if (selectIdsRecords.length) {
+                    const onSelectRequests = selectIdsRecords.flatMap(record => 
+                        record.onSelect.map(select => select.request)
+                    ).filter(Boolean);
+
+                    return res.status(200).json({
+                        status: 'NO_OFFERS',
+                        message: 'No offers available at this time',
+                        onSelectRequests: onSelectRequests
+                    });
+                }
+
                 return res.status(404).json({ error: 'No valid offers found' });
             }
 

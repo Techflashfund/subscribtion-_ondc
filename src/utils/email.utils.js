@@ -19,6 +19,7 @@ const sendOtpEmail = async (email, otp) => {
 };
 const sendReferrerCredentials = async (referrerEmail, password) => {
     try {
+        log
         await resend.emails.send({
             from: 'no-reply@purchase-finance.flashfund.in',
             to: referrerEmail,
