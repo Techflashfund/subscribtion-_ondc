@@ -20,7 +20,7 @@ const sendOtpEmail = async (email, otp) => {
 const sendReferrerCredentials = async (referrerEmail, password) => {
     try {
         await resend.emails.send({
-            from: 'no-reply@purchase-finance.flashfund.in',
+            from: 'no-reply@flashfund.in',
             to: referrerEmail,
             subject: 'Your Flashfund Referrer Account Credentials',
             html: `
@@ -29,6 +29,7 @@ const sendReferrerCredentials = async (referrerEmail, password) => {
                 <p>Please find your login credentials below:</p>
                 <p>Email: <strong>${referrerEmail}</strong></p>
                 <p>Password: <strong>${password}</strong></p>
+                <p>Login URL: <a href="https://pl-referral-dashboard.vercel.app/">https://pl-referral-dashboard.vercel.app/</a></p>
                 <h3>Important Information:</h3>
                 <ul>
                     <li>After logging in, you'll find your unique QR code in your dashboard</li>

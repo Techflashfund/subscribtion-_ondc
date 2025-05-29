@@ -81,7 +81,7 @@ class SearchController {
           return res.status(200).json({
             success: true,
             message: "Working Capital loans coming soon!",
-            availableDate: "Expected Q3 2024",
+            availableDate: "Expected Q3 2025",
           });
         default:
           return res.status(400).json({
