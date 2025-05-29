@@ -64,17 +64,45 @@ const getReferrerUsers = async (req, res) => {
         // Find all referrals where the specified email is the referrer
         const referrals = await Referrals.find({ referredBy: referrerEmail })
             .sort({ createdAt: -1 });
-        
-        // Count total referred users
-        const referredCount = referrals.length;
+
+        // Get transactions for each referred user
+        const referralsWithTransactions = await Promise.all(
+            referrals.map(async (ref) => {
+                const transactions = await Transaction.find({ user: ref.userId })
+                    .select('transactionId messageId formSubmissionId status amount ondcSearchResponses createdAt')
+                    .populate({
+                        path: 'formDetails',
+                        select: 'formUrl providerName minLoanAmount maxLoanAmount'
+                    });
+
+                return {
+                    userEmail: ref.userEmail,
+                    referredAt: ref.createdAt,
+                    transactions: transactions.map(trans => ({
+                        transactionId: trans.transactionId,
+                        messageId: trans.messageId,
+                        formSubmissionId: trans.formSubmissionId,
+                        status: trans.status,
+                        amount: trans.amount,
+                        createdAt: trans.createdAt,
+                        formDetails: trans.formDetails,
+                        providers: trans.ondcSearchResponses.map(provider => ({
+                            providerId: provider.providerId,
+                            providerName: provider.providerName,
+                            formSubmissionId: provider.formSubmissionId,
+                            responseTimestamp: provider.responseTimestamp
+                        }))
+                    }))
+                };
+            })
+        );
         
         res.json({
-            referredCount,
-            referrals: referrals.map(ref => ({
-                userEmail: ref.userEmail,
-                referredAt: ref.createdAt
-            }))
+            referrerEmail,
+            referredCount: referrals.length,
+            referrals: referralsWithTransactions
         });
+
     } catch (error) {
         console.error('Get referrer users error:', error);
         res.status(500).json({ message: 'Something went wrong' });
