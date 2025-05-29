@@ -16,7 +16,7 @@ class OffersController {
                 // Check SelectIds model if no records found in SelectTwo
                 const selectIdsRecords = await SelectIds.find({ 
                     transactionId,
-                    status: 'no'
+                    
                 });
 
                 if (selectIdsRecords.length) {
@@ -40,7 +40,7 @@ class OffersController {
                 // Check SelectIds model if no valid records in SelectTwo
                 const selectIdsRecords = await SelectIds.find({ 
                     transactionId,
-                    status: 'no'
+                    
                 });
 
                 if (selectIdsRecords.length) {
