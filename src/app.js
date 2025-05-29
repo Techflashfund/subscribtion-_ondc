@@ -52,7 +52,8 @@ app.use(cors({
         'https://personal-loan-ui.vercel.app',
        'https://personal-loan-dashboard.vercel.app',
       'https://pl-pf-admin-dashboard.vercel.app',
-      'https://pl-referral-dashboard.vercel.app'
+      'https://pl-referral-dashboard.vercel.app',
+      'https://personalloan.flashfund.in'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
