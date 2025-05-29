@@ -49,10 +49,11 @@ const signup = async (req, res) => {
                  
 
                 try {
-                    await Referrals.create({
-                    referredBy: referrer,
-                    userEmail: email
-                });
+        await Referrals.create({
+            referredBy: referrer,
+            userEmail: email,
+            userId: user._id  // Add the user ID to the referral record
+        });
             } catch (referralError) {
                 // Log the error but don't fail the signup process
                 console.error('Error creating referral record:', referralError);

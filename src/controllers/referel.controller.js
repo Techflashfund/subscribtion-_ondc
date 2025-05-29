@@ -1,5 +1,6 @@
 const ReferralUser = require('../models/refferedusers.model');
 const Referrals = require('../models/refferels.model');
+const Transaction = require('../models/transaction.model'); 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { sendReferrerCredentials, sendAdminNotification } = require('../utils/email.utils');
@@ -10,16 +11,47 @@ const getUserReferrals = async (req, res) => {
     const userEmail = req.params.email;
     
     // Find all referrals where current user is the referrer
-    const referrals = await ReferralUser.find({ referrer: userEmail })
-      .sort({ createdAt: -1 }); // Most recent first
-    
-    // Count total referrals
-    const referralCount = referrals.length;
-    
-    res.json({
-      referralCount,
-      referrals
-    });
+   const referrals = await Referrals.find({})
+            .sort({ createdAt: -1 })
+            .select('referredBy userEmail userId createdAt');
+
+        // Get transactions for each referral
+        const referralsWithTransactions = await Promise.all(
+            referrals.map(async (ref) => {
+                const transactions = await Transaction.find({ user: ref.userId })
+                    .select('transactionId messageId formSubmissionId status amount ondcSearchResponses createdAt')
+                    .populate({
+                        path: 'formDetails',
+                        select: 'formUrl providerName minLoanAmount maxLoanAmount'
+                    });
+
+                return {
+                    referredBy: ref.referredBy,
+                    userEmail: ref.userEmail,
+                    referredAt: ref.createdAt,
+                    transactions: transactions.map(trans => ({
+                        transactionId: trans.transactionId,
+                        messageId: trans.messageId,
+                        formSubmissionId: trans.formSubmissionId,
+                        status: trans.status,
+                        amount: trans.amount,
+                        createdAt: trans.createdAt,
+                        formDetails: trans.formDetails,
+                        providers: trans.ondcSearchResponses.map(provider => ({
+                            providerId: provider.providerId,
+                            providerName: provider.providerName,
+                            formSubmissionId: provider.formSubmissionId,
+                            responseTimestamp: provider.responseTimestamp
+                        }))
+                    }))
+                };
+            })
+        );
+
+        res.json({
+            totalReferrals: referrals.length,
+            referrals: referralsWithTransactions
+        });
   } catch (error) {
     console.error('Get referrals error:', error);
     res.status(500).json({ message: 'Something went wrong' });
