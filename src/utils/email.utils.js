@@ -20,7 +20,7 @@ const sendOtpEmail = async (email, otp) => {
 const sendReferrerCredentials = async (referrerEmail, password) => {
     try {
         await resend.emails.send({
-            from: 'no-reply@flashfund.in',
+            from: 'no-reply@purchase-finance.flashfund.in',
             to: referrerEmail,
             subject: 'Your Flashfund Referrer Account Credentials',
             html: `
